@@ -11,21 +11,21 @@ Mahasiswa mengisi, memodifikasi, dan mengembangkan kode ini sesuai topik kelompo
 
 | Nama | NIM | Tugas Utama |
 |------|-----|-------------|
-| ...  | ... | ...         |
-| ...  | ... | ...         |
-| ...  | ... | ...         |
+| Dzakwan Daris Fakhruddin  | 244311011 |   Data Engineer    |
+| Takeru Putra Nojima  | 244311029 |       Data Analysis  |
+| Dea Riftya Ananda | 244311008|  Project Manager        |
 
-**Topik Domain:** *(isi: Akademik / Kesehatan / Hukum / Bisnis / Pertanian / Teknologi)*  
-**Stack yang Dipilih:** *(isi: LangChain / LlamaIndex / From Scratch)*  
-**LLM yang Digunakan:** *(isi: Groq / Gemini / Ollama / lainnya)*  
-**Vector DB yang Digunakan:** *(isi: ChromaDB / FAISS / lainnya)*
+**Topik Domain:** *Kesehatan Mental*  
+**Stack yang Dipilih:** *From Scratch*  
+**LLM yang Digunakan:** *Gemini, Llama*  
+**Vector DB yang Digunakan:** *ChromaDB*
 
 ---
 
 ## 🗂️ Struktur Proyek
 
 ```
-rag-uts-[nama-kelompok]/
+rag-uts-[kelompok 9]/
 ├── data/                    # Dokumen sumber Anda (PDF, TXT, dll.)
 │   └── sample.txt           # Contoh dokumen (ganti dengan dokumen Anda)
 ├── src/
