@@ -1,145 +1,101 @@
-"""
-=============================================================
-PIPELINE INDEXING — RAG UTS Data Engineering
-=============================================================
-
-Pipeline ini dijalankan SEKALI untuk:
-1. Memuat dokumen dari folder data/
-2. Memecah dokumen menjadi chunk-chunk kecil
-3. Mengubah setiap chunk menjadi vektor (embedding)
-4. Menyimpan vektor ke dalam vector database
-
-Jalankan dengan: python src/indexing.py
-=============================================================
-"""
-
 import os
 from pathlib import Path
+import pandas as pd
+import chromadb
+from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
 
-# ─── LANGKAH 0: Load konfigurasi dari .env ───────────────────────────────────
 load_dotenv()
 
-# Konfigurasi — bisa diubah sesuai kebutuhan
-CHUNK_SIZE    = int(os.getenv("CHUNK_SIZE", 500))
-CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", 50))
-DATA_DIR      = Path(os.getenv("DATA_DIR", "./data"))
-VS_DIR        = Path(os.getenv("VECTORSTORE_DIR", "./vectorstore"))
+DATA_DIR = Path(os.getenv("DATA_DIR", "./data"))
+VS_DIR = Path(os.getenv("VECTORSTORE_DIR", "./vectorstore"))
 
+def preprocess_tabular_to_text(df, tipe_data):
+    text = ""
+    for index, row in df.iterrows():
+        if tipe_data == "jam_kerja":
+            text += f"Berdasarkan data Eurostat 2024, negara dengan kode {row['Country_Code']} memiliki rata-rata jam kerja mingguan aktual sebesar {row['Weekly_Hours']} jam.\n"
+        elif tipe_data == "kebahagiaan":
+            text += f"Berdasarkan World Happiness Report 2024, negara {row['Country_Name']} memiliki skor indeks kebahagiaan sebesar {row['Happiness_Score']}.\n"
+    return text
 
-# =============================================================
-# TODO MAHASISWA:
-# Pilih salah satu implementasi di bawah (A, B, atau C)
-# Hapus komentar pada blok yang kalian pilih
-# =============================================================
+def chunk_text(text, chunk_size=400, overlap=100):
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunks.append(text[start:end])
+        start = end - overlap
+    return chunks
 
+def process_and_chunk_csv(file_path, rows_per_chunk=5):
+    try:
+        df = pd.read_csv(file_path)
+        chunks = []
+        current_chunk_text = ""
+        for index, row in df.iterrows():
+            row_text = ", ".join([f"{col}: {val}" for col, val in row.items()])
+            current_chunk_text += f"Baris {index + 1} - {row_text}\n"
+            if (index + 1) % rows_per_chunk == 0:
+                chunks.append(current_chunk_text)
+                current_chunk_text = ""
+        if current_chunk_text.strip() != "":
+            chunks.append(current_chunk_text)
+        return chunks
+    except Exception as e:
+        print(f"Error membaca {file_path}: {e}")
+        return []
 
-# ─────────────────────────────────────────────────────────────
-# IMPLEMENTASI A: LangChain + ChromaDB (REKOMENDASI PEMULA)
-# ─────────────────────────────────────────────────────────────
+def build_index():
+    df_hours = pd.read_excel(DATA_DIR / 'DATA-2024-UPDATE-2025-SE-ACTUAL-AND-USUAL-HOURS-OF-WORK.xlsx', sheet_name='Map 1', skiprows=9, nrows=32)
+    df_hours = df_hours[['GEO', 'VALUES']]
+    df_hours.columns = ['Country_Code', 'Weekly_Hours']
 
-def build_index_langchain():
-    """
-    Membangun index menggunakan LangChain dan ChromaDB.
-    
-    Komponen yang digunakan:
-    - DirectoryLoader: memuat semua file dari folder data/
-    - RecursiveCharacterTextSplitter: memecah dokumen jadi chunk
-    - HuggingFaceEmbeddings: mengubah teks ke vektor (GRATIS, offline)
-    - Chroma: vector database lokal
-    """
-    from langchain_community.document_loaders import DirectoryLoader, TextLoader, PyPDFLoader
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    from langchain_community.vectorstores import Chroma
+    df_whr = pd.read_excel(DATA_DIR / 'WHR24_Data_Figure_2.1.xls')
+    df_whr = df_whr[['Country name', 'Ladder score']]
+    df_whr.columns = ['Country_Name', 'Happiness_Score']
 
-    print("=" * 50)
-    print("Memulai Pipeline Indexing (LangChain)")
-    print("=" * 50)
+    teks_jam_kerja = preprocess_tabular_to_text(df_hours, "jam_kerja")
+    teks_kebahagiaan = preprocess_tabular_to_text(df_whr, "kebahagiaan")
+    gabungan_text = "--- DOKUMEN 1: DATA JAM KERJA EROPA ---\n" + teks_jam_kerja + "\n\n--- DOKUMEN 2: DATA INDEKS KEBAHAGIAAN (WHR) ---\n" + teks_kebahagiaan
 
-    # ─── LANGKAH 1: Load Dokumen ─────────────────────────────
-    print("\n📄 Langkah 1: Memuat dokumen...")
-    
-    # TODO: Sesuaikan dengan format dokumen kalian
-    # Untuk TXT:
-    loader = DirectoryLoader(
-        str(DATA_DIR),
-        glob="**/*.txt",
-        loader_cls=TextLoader,
-        loader_kwargs={"encoding": "utf-8"},
-        show_progress=True
+    chunk_size = int(os.getenv("CHUNK_SIZE", 400))
+    chunk_overlap = int(os.getenv("CHUNK_OVERLAP", 100))
+    dokumen_chunks = chunk_text(gabungan_text, chunk_size=chunk_size, overlap=chunk_overlap)
+
+    file_list = [
+        'FI_LFS_2013_y.csv',
+        'FI_LFS_2013_q4.csv',
+        'FI_LFS_2013_q3.csv',
+        'FI_LFS_2013_q2.csv',
+        'FI_LFS_2013_q1.csv',
+        'FI_LFS_2013_hh.csv'
+    ]
+
+    semua_dokumen_chunks = list(dokumen_chunks)
+    for file in file_list:
+        file_path = DATA_DIR / file
+        if file_path.exists():
+            hasil_chunk = process_and_chunk_csv(file_path, rows_per_chunk=10)
+            semua_dokumen_chunks.extend(hasil_chunk)
+
+    embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+    chroma_client = chromadb.PersistentClient(path=str(VS_DIR))
+    collection = chroma_client.get_or_create_collection(name="koleksi_uts_rag")
+
+    embeddings = embedding_model.encode(semua_dokumen_chunks).tolist()
+    chunk_ids = [f"chunk_{i}" for i in range(len(semua_dokumen_chunks))]
+
+    collection.add(
+        documents=semua_dokumen_chunks,
+        embeddings=embeddings,
+        ids=chunk_ids
     )
     
-    # Untuk PDF (uncomment jika butuh):
-    # loader = DirectoryLoader(str(DATA_DIR), glob="**/*.pdf", loader_cls=PyPDFLoader)
-    
-    documents = loader.load()
-    print(f"   {len(documents)} dokumen berhasil dimuat")
-    print(f"   Total karakter: {sum(len(d.page_content) for d in documents):,}")
+    print(f"Berhasil! {len(semua_dokumen_chunks)} chunks disimpan ke {VS_DIR}")
 
-    # ─── LANGKAH 2: Chunking ─────────────────────────────────
-    print(f"\n  Langkah 2: Memecah dokumen (chunk_size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})...")
-    
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
-        length_function=len,
-        separators=["\n\n", "\n", ".", " ", ""]
-    )
-    chunks = splitter.split_documents(documents)
-    
-    print(f"  {len(chunks)} chunk berhasil dibuat")
-    print(f"  Rata-rata ukuran chunk: {sum(len(c.page_content) for c in chunks) // len(chunks)} karakter")
-    
-    # Tampilkan contoh chunk pertama
-    print(f"\n   Contoh chunk pertama:")
-    print(f"   {'-'*40}")
-    print(f"   {chunks[0].page_content[:200]}...")
-
-    # ─── LANGKAH 3: Embedding ────────────────────────────────
-    print("\n Langkah 3: Membuat embedding (model lokal, tanpa API key)...")
-    
-    # Model gratis dari HuggingFace, berjalan offline
-    # Alternatif model: 'paraphrase-multilingual-MiniLM-L12-v2' (mendukung Bahasa Indonesia)
-    embedding_model = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-        model_kwargs={"device": "cpu"}
-    )
-    print("    Embedding model siap (multilingual, mendukung Bahasa Indonesia)")
-
-    # ─── LANGKAH 4: Simpan ke Vector DB ──────────────────────
-    print(f"\n️  Langkah 4: Menyimpan ke ChromaDB ({VS_DIR})...")
-    
-    VS_DIR.mkdir(parents=True, exist_ok=True)
-    
-    vectorstore = Chroma.from_documents(
-        documents=chunks,
-        embedding=embedding_model,
-        persist_directory=str(VS_DIR)
-    )
-    
-    print(f"    {len(chunks)} chunk tersimpan di vector database")
-    print("\n" + "=" * 50)
-    print(" Indexing selesai! Vector database siap digunakan.")
-    print(f"   Lokasi: {VS_DIR.absolute()}")
-    print("=" * 50)
-    
-    return vectorstore
-
-
-# ─────────────────────────────────────────────────────────────
-# IMPLEMENTASI B: From Scratch (tanpa LangChain)
-# Uncomment blok ini jika memilih opsi from scratch
-# ─────────────────────────────────────────────────────────────
-
-# def build_index_scratch():
-#     """Implementasi RAG dari scratch menggunakan sentence-transformers + FAISS."""
-#     import json
-#     import numpy as np
-#     from sentence_transformers import SentenceTransformer
-#     import faiss
-#
-#     print(" Memulai Pipeline Indexing (From Scratch)")
+if __name__ == "__main__":
+    build_index()
 #
 #     # Load dokumen
 #     documents = []
