@@ -2,8 +2,9 @@
 
 > **Retrieval-Augmented Generation** — Sistem Tanya-Jawab Cerdas Berbasis Dokumen
 
-Starter pack ini adalah **kerangka awal** proyek RAG untuk UTS Data Engineering D3/D4.
-Mahasiswa mengisi, memodifikasi, dan mengembangkan kode ini sesuai topik kelompok masing-masing.
+Starter pack ini adalah **kerangka awal** proyek RAG untuk UTS Data Engineering D4.
+
+Tujuan dari project ini adalah untuk membantu seseorang dalam mengecek usaha yang ingin di jalankan, apakah usaha tersebut legal atau tidak.
 
 ---
 
@@ -15,7 +16,7 @@ Mahasiswa mengisi, memodifikasi, dan mengembangkan kode ini sesuai topik kelompo
 | Takeru Putra Nojima  | 244311029 |       Data Analysis  |
 | Dea Riftya Ananda | 244311008|  Project Manager        |
 
-**Topik Domain:** *Kesehatan Mental*  
+**Topik Domain:** *Pengecekan Legalitas Pada Badan Usaha Berdasarkan Undang-Undang*  
 **Stack yang Dipilih:** *From Scratch*  
 **LLM yang Digunakan:** *Gemini, Llama*  
 **Vector DB yang Digunakan:** *ChromaDB*
@@ -26,17 +27,26 @@ Mahasiswa mengisi, memodifikasi, dan mengembangkan kode ini sesuai topik kelompo
 
 ```
 rag-uts-[kelompok 9]/
-├── data/                    # Dokumen sumber Anda (PDF, TXT, dll.)
-│   └── sample.txt           # Contoh dokumen (ganti dengan dokumen Anda)
+├── data/                    
+   └── Salinan Perpres Nomor 10 Tahun 2021.pdf
+   └── Lampiran I Salinan Perpres Nomor 10 Tahun 2021.pdf
+   └── Lampiran II Salinan Perpres Nomor 10 Tahun 2021.pdf
+   └── Lampiran III Salinan Perpres Nomor 10 Tahun 2021.pdf
+   └── laporan-lkpm-non-umk-triwulan-i-2023.xlsx
+   └── Permenkumham Nomor 17 Tahun 2018.pdf
+   └── Perpres Nomor 10 Tahun 2021.pdf
+   └── PP Nomor 5 Tahun 2021_penjelasan.pdf
+   └── PP Nomor 5 Tahun 2021.pdf
+   └── UU Nomor 6 Tahun 2023.pdf
+   └── UU Nomor 40 Tahun 2007.pdf                
 ├── src/
-│   ├── indexing.py          # 🔧 WAJIB DIISI: Pipeline indexing
-│   ├── query.py             # 🔧 WAJIB DIISI: Pipeline query & retrieval
-│   ├── embeddings.py        # 🔧 WAJIB DIISI: Konfigurasi embedding
-│   └── utils.py             # Helper functions
+│   ├── indexing.py         
+│   ├── query.py            
+│   ├── embeddings.py
 ├── ui/
 │   └── app.py               # 🔧 WAJIB DIISI: Antarmuka Streamlit
 ├── docs/
-│   └── arsitektur.png       # 📌 Diagram arsitektur (buat sendiri)
+│   └── arsitektur.png       # 📌 Diagram arsitektur
 ├── evaluation/
 │   └── hasil_evaluasi.xlsx  # 📌 Tabel evaluasi 10 pertanyaan
 ├── notebooks/
@@ -55,8 +65,8 @@ rag-uts-[kelompok 9]/
 
 ```bash
 # Clone repository ini
-git clone https://github.com/[username]/rag-uts-[kelompok].git
-cd rag-uts-[kelompok]
+git clone https://github.com/deariftyaa/Project_RAG.git
+cd Project_RAG
 
 # Buat virtual environment
 python -m venv venv
@@ -122,9 +132,16 @@ Semua konfigurasi utama ada di `src/config.py` (atau langsung di setiap file):
 
 | # | Pertanyaan | Jawaban Sistem | Jawaban Ideal | Skor (1-5) |
 |---|-----------|----------------|---------------|-----------|
-| 1 | ... | ... | ... | ... |
+| 1 | Menanam sawit di pegunungan apakah legal? | ... | ... | ... |
 | 2 | ... | ... | ... | ... |
-
+| 3 | ... | ... | ... | ... |
+| 4 | ... | ... | ... | ... |
+| 5 | ... | ... | ... | ... |
+| 6 | ... | ... | ... | ... |
+| 7 | ... | ... | ... | ... |
+| 8 | ... | ... | ... | ... |
+| 9 | ... | ... | ... | ... |
+| 10 | ... | ... | ... | ... |
 **Rata-rata Skor:** ...  
 **Analisis:** ...
 
@@ -155,4 +172,4 @@ Semua konfigurasi utama ada di `src/config.py` (atau langsung di setiap file):
 
 - **Mata Kuliah:** Data Engineering
 - **Program Studi:** D4 Teknologi Rekayasa Perangkat Lunak
-- **Deadline:** *(isi tanggal)*
+- **Deadline:** *Kamis, 23 April 2026*
