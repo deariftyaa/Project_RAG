@@ -1,12 +1,3 @@
-"""
-=============================================================
-ANTARMUKA STREAMLIT — RAG UTS Data Engineering
-=============================================================
-
-Jalankan dengan: streamlit run ui/app.py
-=============================================================
-"""
-
 import sys
 import os
 from pathlib import Path
@@ -65,8 +56,10 @@ with st.sidebar:
 def load_vs():
     """Load vector store sekali saja, di-cache untuk performa."""
     try:
-        from query import load_vectorstore
-        return load_vectorstore(), None
+        # from query import load_vectorstore
+        # return load_vectorstore(), None
+        from query import get_vectorstore_collection 
+        return get_vectorstore_collection(), None
     except FileNotFoundError as e:
         return None, str(e)
     except Exception as e:
@@ -112,7 +105,7 @@ if question := st.chat_input("Ketik pertanyaan Anda di sini..."):
         with st.spinner("Mencari informasi relevan dan menghasilkan jawaban..."):
             try:
                 from query import answer_question
-                result = answer_question(question, vectorstore)
+                result = answer_question(question, vectorstore, top_k)
                 
                 st.write(result["answer"])
                 
