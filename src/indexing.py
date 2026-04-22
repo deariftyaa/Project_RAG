@@ -16,7 +16,7 @@ def preprocess_tabular_to_text(df, tipe_data):
         if tipe_data == "jam_kerja":
             text += f"Berdasarkan data Eurostat 2024, negara dengan kode {row['Country_Code']} memiliki rata-rata jam kerja mingguan aktual sebesar {row['Weekly_Hours']} jam.\n"
         elif tipe_data == "kebahagiaan":
-            text += f"Berdasarkan World Happiness Report 2024, negara {row['Country_Name']} memiliki skor indeks kebahagiaan sebesar {row['Happiness_Score']}.\n"
+            text += f"Berdasarkan World Happinesspip Report 2024, negara {row['Country_Name']} memiliki skor indeks kebahagiaan sebesar {row['Happiness_Score']}.\n"
     return text
 
 def chunk_text(text, chunk_size=400, overlap=100):
