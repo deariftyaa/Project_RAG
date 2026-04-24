@@ -40,11 +40,11 @@ with st.sidebar:
     
     # TODO: Isi informasi kelompok kalian di sini
     st.markdown("""
-    **Kelompok:** *(nama kelompok)*  
-    **Domain:** *(domain dokumen)*  
-    **LLM:** *(provider LLM)*  
+    **Kelompok:** *Kelompok 9*  
+    **Domain:** *-*  
+    **LLM:** *Gemini, Llama(Groq)*  
     **Vector DB:** ChromaDB  
-    **Embedding:** multilingual-MiniLM
+    **Embedding:** paraphrase-multilingual-MiniLM-L12-v2
     """)
     
     st.divider()

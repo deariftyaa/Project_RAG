@@ -4,7 +4,7 @@
 
 Starter pack ini adalah **kerangka awal** proyek RAG untuk UTS Data Engineering D4.
 
-Tujuan dari project ini adalah untuk membantu seseorang dalam mengecek usaha yang ingin di jalankan, apakah usaha tersebut legal atau tidak.
+Tujuan  dibuatnya sistem ini adalah untuk membantu seseorang dalam memeriksa usaha yang ingin dijalankan, apakah usaha tersebut legal atau tidak.
 
 ---
 
@@ -48,7 +48,8 @@ rag-uts-[kelompok 9]/
 ├── docs/
 │   └── Arsitektur.png       # 📌 Diagram arsitektur
 ├── evaluation/
-│   └── hasil_evaluasi.xlsx  # 📌 Tabel evaluasi 10 pertanyaan
+│   └── hasil_evaluasi.xlsx  # 📌 Tabel evaluasi 10 Pertanyaan
+    └── hasil_evaluasi.pdf
 ├── notebooks/
 │   └── 01_demo_rag.ipynb    # Notebook demo dari hands-on session
 ├── .env.example             # Template environment variables
@@ -92,7 +93,17 @@ cp .env.example .env
 Letakkan dokumen sumber Anda di folder `data/`:
 ```bash
 # Contoh: salin PDF atau TXT ke folder data
-cp dokumen-saya.pdf data/
+cp Salinan Perpres Nomor 10 Tahun 2021.pdf data/
+cp Lampiran I Salinan Perpres Nomor 10 Tahun 2021.pdf data/
+cp Lampiran II Salinan Perpres Nomor 10 Tahun 2021.pdf data/
+cp Lampiran III Salinan Perpres Nomor 10 Tahun 2021.pdf data/
+cp laporan-lkpm-non-umk-triwulan-i-2023.xlsx data/
+cp Permenkumham Nomor 17 Tahun 2018.pdf data/
+cp Perpres Nomor 10 Tahun 2021.pdf data/
+cp PP Nomor 5 Tahun 2021_penjelasan.pdf data/
+cp PP Nomor 5 Tahun 2021.pdf data/
+cp UU Nomor 6 Tahun 2023.pdf data/
+cp UU Nomor 40 Tahun 2007.pdf data/
 ```
 
 ### 4. Jalankan Indexing (sekali saja)
@@ -128,12 +139,7 @@ Semua konfigurasi utama ada di `src/config.py` (atau langsung di setiap file):
 
 ## 📊 Hasil Evaluasi
 
-*(Isi setelah pengujian selesai)*
-
-## 📊 Hasil Evaluasi
-
 *(Berdasarkan pengujian sistem RAG dengan dokumen UU 40/2007, UU 6/2023, PP 5/2021, dan Perpres 10/2021)*
-
 | # | Pertanyaan | Jawaban Sistem | Jawaban Ideal | Skor (1-5) |
 |---|-----------|----------------|---------------|-----------|
 | 1 | Menanam sawit di pegunungan apakah legal? | Berdasarkan konteks dokumen hukum yang disediakan, saya tidak menemukan aturan yang secara spesifik melarang menanam sawit di pegunungan. Namun, perlu diingat bahwa menanam sawit di Kawasan Hutan tanpa Perizinan Berusaha dari Pemerintah Pusat dapat dianggap sebagai kegiatan yang melanggar aturan... | Menanam sawit di kawasan hutan lindung atau konservasi (seringkali area pegunungan) adalah ilegal tanpa izin pelepasan kawasan hutan. UU Cipta Kerja mengatur pemanfaatan hutan, namun ada larangan ketat mengubah fungsi hutan lindung menjadi perkebunan komersial. | 3 |
@@ -149,7 +155,7 @@ Semua konfigurasi utama ada di `src/config.py` (atau langsung di setiap file):
 
 **Rata-rata Skor:** 3.9 / 5.0  
 
-**Analisis:** Sistem RAG ini menunjukkan performa yang sangat baik dalam menjawab pertanyaan regulasi prosedural yang eksplisit, seperti kewajiban kepemilikan NIB dan klasifikasi risiko usaha, karena data tersebut terindeks dengan baik dari PP Nomor 5 Tahun 2021 (Skor 5). Sistem juga memiliki fitur kehati-hatian yang baik (safety rail); ketika dihadapkan pada pertanyaan di luar dokumen konteks (seperti bea cukai rokok atau legalitas ganja medis), sistem secara jujur menyatakan bahwa informasi tersebut tidak ditemukan dalam dokumen, mencegah halusinasi fatal (Skor 4). Namun, sistem masih memiliki kelemahan dalam pemahaman konteks lintas-dokumen untuk kasus spesifik. Misalnya, pada pertanyaan tentang toko kecil dan jam operasional, sistem keliru mengutip pasal sanksi untuk "perusahaan perkebunan" atau "industri" karena gagal membedakan entitas retail skala kecil dengan entitas industri skala besar di dalam dokumen yang sama (Skor 3). Secara keseluruhan, sistem ini sangat layak dijadikan asisten konsultan hukum tahap awal, namun tetap membutuhkan supervisi manusia untuk menginterpretasikan jenis entitas hukum secara akurat.
+**Analisis:** Sistem RAG ini dapat memberikan jawaban yang akurat pada pertanyaan-pertanyaan regulasi prosedural yang bersifat eksplisit, seperti kewajiban memiliki NIB dan pengelompokan risiko usaha, karena dokumen dari PP Nomor 5 Tahun 2021 telah terindeks dengan baik (Skor 5). Selain itu, sistem ini juga dilengkapi mekanisme keamanan yang cukup baik, yaitu saat menerima pertanyaan yang tidak tercakup dalam dokumen konteks, seperti cukai rokok atau status hukum ganja medis, sistem ini juga menyatakan keterbatasan informasi sehingga dapat meminimalkan risiko jawaban di luar konteks (Skor 4). Namun, sistem ini juga memiliki kelemahan dalam memahami konteks secara lintas dokumen pada kasus-kasus tertentu, seperti ketika sistem salah mengutip pasal yang ditujukan untuk entitas industri besar padahal pertanyaan berkaitan dengan toko kecil atau jam operasional (Skor 3). Maka dari itu, sistem ini cukup layak digunakan sebagai alat bantu konsultasi hukum awal, meskipun tetap memerlukan pengawasan dari tenaga ahli untuk memastikan ketepatan interpretasi jenis entitas hukum yang dimaksud.
 
 ---
 
